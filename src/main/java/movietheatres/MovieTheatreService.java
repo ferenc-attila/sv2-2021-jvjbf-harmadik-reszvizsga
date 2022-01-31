@@ -9,32 +9,40 @@ import java.util.*;
 
 public class MovieTheatreService {
 
-    private Map<String, List<Movie>> shows = new HashMap<>();
-
-    public MovieTheatreService() {
-    }
+    private Map<String, List<Movie>> shows = new LinkedHashMap<>();
 
     public void readFromFile(Path path) {
         try (BufferedReader br = Files.newBufferedReader(path)) {
             String line;
             while ((line = br.readLine()) != null) {
-                String movieTheater = parseRow(line)[0];
-                List<Movie> movies = createListOfMovies(line, movieTheater);
-                movies.sort(Comparator.naturalOrder());
-                shows.put(movieTheater, movies);
+                createEntriesInShows(line);
             }
+            sortMovies();
         } catch (IOException ioe) {
             throw new IllegalStateException("Unable to read file!", ioe);
         }
     }
 
-    private List<Movie> createListOfMovies(String line, String movieTheater) {
-        List<Movie> movies = new ArrayList<>();
-        if (line.startsWith(movieTheater)) {
-            String[] movieString = parseRow(line)[1].split(";");
-            movies.add(new Movie(movieString[0], LocalTime.parse(movieString[1])));
+    private void createEntriesInShows(String line) {
+        String movieTheater = parseRow(line)[0];
+        Movie movie = parseMovie(line);
+        if (!shows.containsKey(movieTheater)) {
+            shows.put(movieTheater, new ArrayList<>());
+            shows.get(movieTheater).add(movie);
+        } else {
+            shows.get(movieTheater).add(movie);
         }
-        return movies;
+    }
+
+    private void sortMovies() {
+        for (List<Movie> movies : shows.values()) {
+            movies.sort(Comparator.comparing(Movie::getStartTime));
+        }
+    }
+
+    private Movie parseMovie(String line) {
+        String[] movieString = parseRow(line)[1].split(";");
+        return new Movie(movieString[0], LocalTime.parse(movieString[1]));
     }
 
     private String[] parseRow(String line) {
