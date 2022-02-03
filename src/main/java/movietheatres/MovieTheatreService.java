@@ -28,10 +28,8 @@ public class MovieTheatreService {
         Movie movie = parseMovie(line);
         if (!shows.containsKey(movieTheater)) {
             shows.put(movieTheater, new ArrayList<>());
-            shows.get(movieTheater).add(movie);
-        } else {
-            shows.get(movieTheater).add(movie);
         }
+        shows.get(movieTheater).add(movie);
     }
 
     private void sortMovies() {
